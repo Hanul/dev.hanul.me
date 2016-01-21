@@ -1,0 +1,42 @@
+<% include('../site_config.js'); %>
+<%
+	var data = {};
+	var ObjectID = require('mongodb').ObjectID;
+	
+	require('mongodb').MongoClient.connect('mongodb://localhost:27017/dev-hanul-blog', function(error, db) {
+	
+		db.collection('article').findOne({
+			_id : ObjectID(self.params.id)
+		}, function(error, _data) {
+			if (error === null) {
+				data = _data;
+				self.title = data.title;
+				resume();
+			}
+		});
+	});
+	
+	pause();
+%>
+<% include('top.nsp'); %>
+
+<section class="post">
+	<header class="post-header">
+
+		<h2 class="post-title">{{data.title}}</h2>
+
+		<p class="post-meta">
+			<~ data.tags -> tag >
+				<a class="post-category post-category-js" href="index.nsp?tag={{tag}}">{{tag}}</a>
+			</~>
+		</p>
+	</header>
+
+	<div class="post-description">
+		<p>
+			{{data.content}}
+		</p>
+	</div>
+</section>
+
+<% include('bottom.nsp'); %>

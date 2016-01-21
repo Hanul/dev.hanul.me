@@ -1,0 +1,47 @@
+<% include('../site_config.js'); %>
+<% include('top.nsp'); %>
+
+	<%
+		var data = self.params;
+		var isNew = true;
+		
+		var isNotEmpty = function(str) {
+			return str !== undefined && str !== '';
+		};
+		
+		if (
+		self.method === 'POST' &&
+		isNotEmpty(data.title) === true &&
+		isNotEmpty(data.content) === true) {
+			
+			if (isNotEmpty(data.content) === true) {
+				data.tags = data.tags.split(',');
+			}
+			
+			require('mongodb').MongoClient.connect('mongodb://localhost:27017/dev-hanul-blog', function(error, db) {
+				
+				db.collection('article').insertOne(data, function(error, result) {
+					if (error === null) {
+						data = result.ops[0];
+						redirect('view?id=' + data._id);
+						resume();
+					}
+				});
+			});
+			
+			pause();
+		}
+	%>
+
+	<form class="pure-form" method="POST">
+	
+	    <fieldset class="pure-group">
+	        <input type="text" class="pure-input-1" placeholder="제목" name="title" value="{{data.title}}">
+	        <input type="text" class="pure-input-1" placeholder="태그 (쉼표로 구분)" name="tags" value="{{data.tags}}">
+	        <textarea class="pure-input-1" placeholder="내용" rows="10" name="content">{{data.content}}</textarea>
+	    </fieldset>
+	
+	    <button type="submit" class="pure-button pure-input-1 pure-button-primary">작성 완료</button>
+	</form>
+	
+<% include('bottom.nsp'); %>

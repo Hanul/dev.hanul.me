@@ -1,0 +1,23 @@
+					<div class="footer">
+						<div class="pure-menu pure-menu-horizontal">
+							<ul>
+								<li class="pure-menu-item">
+									<a href="http://hanul.me" class="pure-menu-link">Hanul.me</a>
+								</li>
+								<li class="pure-menu-item">
+									<a href="https://github.com/Hanul" class="pure-menu-link">GitHub</a>
+								</li>
+								<li class="pure-menu-item">
+									<a href="https://www.facebook.com/mr.hanul" class="pure-menu-link">Facebook</a>
+								</li>
+								<li class="pure-menu-item">
+									<a href="mailto:hanul@hanul.me" class="pure-menu-link">Email</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
