@@ -1,24 +1,54 @@
 <% include('../site_config.js'); %>
-<% include('top.nsp'); %>
-
-	<%
-		var data = self.params;
-		var isNew = true;
+<% include('util.js'); %>
+<%
+	var data = self.params;
+	var id = data.id;
+	var isNew = true;
+	
+	var isNotEmpty = function(str) {
+		return str !== undefined && str !== '';
+	};
+	
+	if (
+	self.method === 'POST' &&
+	isNotEmpty(data.title) === true &&
+	isNotEmpty(data.content) === true) {
 		
-		var isNotEmpty = function(str) {
-			return str !== undefined && str !== '';
-		};
+		if (isNotEmpty(data.tags) === true) {
+			data.tags = data.tags.split(',');
+			EACH(data.tags, function(tag, i) {
+				data.tags[i] = tag.trim();
+			});
+		}
 		
-		if (
-		self.method === 'POST' &&
-		isNotEmpty(data.title) === true &&
-		isNotEmpty(data.content) === true) {
+		data.html = require('marked')(data.content);
+		data.preview = data.html.replace(/<(?:.|\n)*?>/gm, '');
+		
+		if (isNotEmpty(id) === true) {
 			
-			if (isNotEmpty(data.content) === true) {
-				data.tags = data.tags.split(',');
-			}
-			
-			require('mongodb').MongoClient.connect('mongodb://localhost:27017/dev-hanul-blog', function(error, db) {
+			require('mongodb').MongoClient.connect(site_config.mongoPath, function(error, db) {
+				
+				delete data.id;
+				data.lastUpdateTime = new Date();
+				
+				db.collection('article').updateOne({
+					_id : self.generateObjectIDSafely(id)
+				}, {
+					$set : data
+				}, function(error, result) {
+					if (error === null) {
+						redirect('view?id=' + id);
+						resume();
+					}
+				});
+			});
+		}
+		
+		else {
+		
+			require('mongodb').MongoClient.connect(site_config.mongoPath, function(error, db) {
+				
+				data.createTime = new Date();
 				
 				db.collection('article').insertOne(data, function(error, result) {
 					if (error === null) {
@@ -28,20 +58,45 @@
 					}
 				});
 			});
-			
-			pause();
 		}
-	%>
+		
+		pause();
+	}
+	
+	else if (
+	self.method === 'GET' &&
+	isNotEmpty(id) === true) {
+		
+		require('mongodb').MongoClient.connect(site_config.mongoPath, function(error, db) {
+	
+			db.collection('article').findOne({
+				_id : self.generateObjectIDSafely(id)
+			}, function(error, _data) {
+				if (error === null && _data !== null) {
+					data = _data;
+					self.title = data.title + ' 수정';
+					resume();
+				}
+			});
+		});
+		
+		pause();
+	}
+%>
+<% include('top.nsp'); %>
 
-	<form class="pure-form" method="POST">
+	<form class="pure-form" method="POST" action="form">
+	    <input type="hidden" name="id" value="{{id}}">
 	
 	    <fieldset class="pure-group">
 	        <input type="text" class="pure-input-1" placeholder="제목" name="title" value="{{data.title}}">
-	        <input type="text" class="pure-input-1" placeholder="태그 (쉼표로 구분)" name="tags" value="{{data.tags}}">
+	        <input type="text" class="pure-input-1" placeholder="태그 (쉼표로 구분)" name="tags" value="<~ data.tags -> i: tag>{{tag}}{{i < data.tags.length - 1 ? ', ' : ''}}</~>">
 	        <textarea class="pure-input-1" placeholder="내용" rows="10" name="content">{{data.content}}</textarea>
 	    </fieldset>
 	
 	    <button type="submit" class="pure-button pure-input-1 pure-button-primary">작성 완료</button>
 	</form>
+	
+	<iframe id="upload_form" src="upload"></iframe>
 	
 <% include('bottom.nsp'); %>

@@ -1,85 +1,53 @@
 <% include('../site_config.js'); %>
+<% include('util.js'); %>
+<%
+	var dataSet;
+	var tag = self.params.tag;
+	
+	require('mongodb').MongoClient.connect(site_config.mongoPath, function(error, db) {
+	
+		db.collection('article').find(tag === undefined ? undefined : {
+			tags : tag
+		}).sort({
+			createTime : -1
+		}).limit(5).toArray(function(error, _dataSet) {
+			if (error === null) {
+				dataSet = _dataSet;
+				resume();
+			}
+		});
+	});
+	
+	pause();
+%>
 <% include('top.nsp'); %>
 
 <div class="posts">
 	<h1 class="content-subhead">Recent Posts</h1>
-
-	<section class="post">
-		<header class="post-header">
-
-			<h2 class="post-title"><a href="view.nsp">이것은요, 제목입니다.</a></h2>
-
-			<p class="post-meta">
-				<a class="post-category post-category-js" href="#">JavaScript</a>
-				<a class="post-category post-category-js" href="#">JavaScript</a>
-				<a class="post-category post-category-js" href="#">JavaScript</a>
-			</p>
-		</header>
-
-		<div class="post-description">
-			<p>
-				<a href="view.nsp">
-				외국인은 국제법과 조약이 정하는 바에 의하여 그 지위가 보장된다. 대법원과 각급법원의 조직은 법률로 정한다. 국회의원은 그 지위를 남용하여 국가·공공단체 또는 기업체와의 계약이나 그 처분에 의하여 재산상의 권리·이익 또는 직위를 취득하거나 타인을 위하여 그 취득을 알선할 수 없다.
-				
-				모든 국민은 법률이 정하는 바에 의하여 국방의 의무를 진다. 사회적 특수계급의 제도는 인정되지 아니하며, 어떠한 형태로도 이를 창설할 수 없다. 국회는 상호원조 또는 안전보장에 관한 조약, 중요한 국제조직에 관한 조약, 우호통상항해조약, 주권의 제약에 관한 조약, 강화조약, 국가나 국민에게 중대한 재정적 부담을 지우는 조약 또는 입법사항에 관한 조약의 체결·비준에 대한 동의권을 가진다.
-				</a>
-			</p>
-		</div>
-	</section>
-
-	<section class="post">
-		<header class="post-header">
-			<img class="post-avatar" alt="Reid Burke&#x27;s avatar" height="48" width="48" src="img/common/reid-avatar.png">
-
-			<h2 class="post-title">Photos from CSSConf and JSConf</h2>
-
-			<p class="post-meta">
-				By <a class="post-author" href="#">Reid Burke</a> under <a class="post-category" href="#">Uncategorized</a>
-			</p>
-		</header>
-
-		<div class="post-description">
-			<div class="post-images pure-g">
-				<div class="pure-u-1 pure-u-md-1-2">
-					<a href="http://www.flickr.com/photos/uberlife/8915936174/"> <img alt="Photo of someone working poolside at a resort"
-					class="pure-img-responsive"
-					src="http://farm8.staticflickr.com/7448/8915936174_8d54ec76c6.jpg"> </a>
-
-					<div class="post-image-meta">
-						<h3>CSSConf Photos</h3>
-					</div>
-				</div>
-
-				<div class="pure-u-1 pure-u-md-1-2">
-					<a href="http://www.flickr.com/photos/uberlife/8907351301/"> <img alt="Photo of the sunset on the beach"
-					class="pure-img-responsive"
-					src="http://farm8.staticflickr.com/7382/8907351301_bd7460cffb.jpg"> </a>
-
-					<div class="post-image-meta">
-						<h3>JSConf Photos</h3>
-					</div>
-				</div>
+	<~ dataSet -> data >
+	
+		<section class="post">
+			<header class="post-header">
+	
+				<h2 class="post-title"><a href="view?id={{data._id.toString()}}">{{data.title}}</a></h2>
+	
+				<p class="post-meta">
+					<~ data.tags -> tag >
+						<a class="post-category post-category-js" href="/?tag={{tag}}">{{tag}}</a>
+					</~>
+				</p>
+			</header>
+	
+			<div class="post-description">
+				<p>
+					<a href="view?id={{data._id.toString()}}">
+						{{data.preview}}
+					</a>
+				</p>
 			</div>
-		</div>
-	</section>
-
-	<section class="post">
-		<header class="post-header">
-			<img class="post-avatar" alt="Andrew Wooldridge&#x27;s avatar" height="48" width="48" src="img/common/andrew-avatar.png">
-
-			<h2 class="post-title">YUI 3.10.2 Released</h2>
-
-			<p class="post-meta">
-				By <a class="post-author" href="#">Andrew Wooldridge</a> under <a class="post-category post-category-yui" href="#">YUI</a>
-			</p>
-		</header>
-
-		<div class="post-description">
-			<p>
-				We are happy to announce the release of YUI 3.10.2! You can find it now on the Yahoo! CDN, download it directly, or pull it in via npm. We’ve also updated the YUI Library website with the latest documentation.
-			</p>
-		</div>
-	</section>
+		</section>
+		
+	</~>
 </div>
 
 <% include('bottom.nsp'); %>

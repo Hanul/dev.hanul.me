@@ -1,14 +1,14 @@
 <% include('../site_config.js'); %>
+<% include('util.js'); %>
 <%
 	var data = {};
-	var ObjectID = require('mongodb').ObjectID;
 	
-	require('mongodb').MongoClient.connect('mongodb://localhost:27017/dev-hanul-blog', function(error, db) {
+	require('mongodb').MongoClient.connect(site_config.mongoPath, function(error, db) {
 	
 		db.collection('article').findOne({
-			_id : ObjectID(self.params.id)
+			_id : self.generateObjectIDSafely(self.params.id)
 		}, function(error, _data) {
-			if (error === null) {
+			if (error === null && _data !== null) {
 				data = _data;
 				self.title = data.title;
 				resume();
@@ -27,16 +27,18 @@
 
 		<p class="post-meta">
 			<~ data.tags -> tag >
-				<a class="post-category post-category-js" href="index.nsp?tag={{tag}}">{{tag}}</a>
+				<a class="post-category post-category-js" href="/?tag={{tag}}">{{tag}}</a>
 			</~>
 		</p>
 	</header>
 
 	<div class="post-description">
 		<p>
-			{{data.content}}
+			{{data.html}}
 		</p>
 	</div>
+	
+	<a href="form?id={{data._id.toString()}}">수정</a>
 </section>
 
 <% include('bottom.nsp'); %>

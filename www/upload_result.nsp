@@ -1,0 +1,57 @@
+<% include('../site_config.js'); %>
+<% include('util.js'); %>
+<!DOCTYPE html>
+<html>
+	<body>
+		<p><%
+			var ids = [];
+			
+			// Uploaded file is saved in 'upload_temp_files' folder.
+			upload('upload_temp_files', function(fileInfos) {
+				
+				NEXT(fileInfos, [
+				
+				function(fileInfo, next) {
+					
+					require('mongodb').MongoClient.connect(site_config.mongoPath, function(error, db) {
+						
+						db.collection('file_info').insertOne({
+							size : fileInfo.size,
+							name : fileInfo.name,
+							type : fileInfo.type,
+							lastModifiedTime : fileInfo.lastModifiedTime,
+							ip : fileInfo.ip
+						}, function(error, result) {
+							
+							var id;
+							
+							if (error === null) {
+								
+								id = result.ops[0]._id.toString();
+								
+								MOVE_FILE({
+									from : fileInfo.path,
+									to : 'www/upload_files/' + id
+								});
+								
+								ids.push(id);
+							}
+							
+							next();
+						});
+					});
+				},
+				
+				function() {
+					return resume;
+				}]);
+			});
+			
+			pause();
+		%></p>
+		<~ ids -> id>
+			<p>![ScreenShot](upload_files/{{id}})</p>
+		</~>
+		<a href="upload">돌아가기</a>
+	</body>
+</html>

@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		<form action="upload_result" method="POST" enctype="multipart/form-data">
+			<input type="file" name="file" multiple="multiple"><br>
+			<input type="submit" value="Submit">
+		</form>
+	</body>
+</html>
